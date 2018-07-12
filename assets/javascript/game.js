@@ -27,19 +27,38 @@ function Hero(id,hp,maxStamina,attacks,staminaLoadSpeed){
             "left":left+"px"
         })
         charDiv.append(img)
-        var health = $("<div>").addClass("progress");
-        health.css({
+
+        // STAMINA BAR
+        var stamina = $("<div>").addClass("progress");
+        stamina.css({
             'height':'5px',
             'margin-bottom':'10px'
         })
-        var bar = $("<div>").addClass("progress-bar bg-danger");
-        bar.attr("role","progressbar");
-        bar.attr("id",this.id+"Health")
-        bar.css({
+        var staminaBar = $("<div>").addClass("progress-bar bg-success");
+        staminaBar.attr("role","progressbar");
+        staminaBar.attr("id",this.id+"Stamina")
+        staminaBar.css({
+            'width':String(this.stamina)+"%"
+        })
+        stamina.append(staminaBar)
+        charDiv.prepend(stamina)
+
+        //HEALTH BAR
+        var health = $("<div>").addClass("progress");
+        health.css({
+            'height':'5px',
+            'margin-bottom':'1px'
+        })
+        var healthBar = $("<div>").addClass("progress-bar bg-danger");
+        healthBar.attr("role","progressbar");
+        healthBar.attr("id",this.id+"Health")
+        healthBar.css({
             'width':String(this.hp)+"%"
         })
-        health.append(bar)
+        health.append(healthBar)
         charDiv.prepend(health)
+
+        
         $("body").append(charDiv)
 
     };
@@ -50,17 +69,38 @@ function Hero(id,hp,maxStamina,attacks,staminaLoadSpeed){
         health.css({
             'width':String(this.hp)+'%'
         })
+        var stamina = $("#"+this.id+"Stamina")
+        stamina.css({
+            'width':String(this.stamina)+'%'
+        })
     },
     this.img= this.id+"_fr1.gif"
     this.hp=hp;
     this.maxStamina=maxStamina;
     this.stamina=maxStamina;
     this.attacks=attacks;
+    this.loadingStamina = false;
     this.staminaLoadSpeed=staminaLoadSpeed
     this.staminaLoad = function(){
-        while(this.maxStamina>this.stamina){
-            this.stamina+=this.staminaLoadSpeed;
-            setTimeout(this.staminaLoad,1000)
+        console.log(this.loadingStamina)
+        if (this.stamina<this.maxStamina && this.loadingStamina===false){
+            this.loadingStamina=true
+            var loader = setInterval(()=>{
+                console.log(this.stamina)
+                console.log(this.maxStamina)
+                console.log(this.staminaLoadSpeed)
+                this.update()
+                this.stamina+=this.staminaLoadSpeed;
+                if (this.stamina>this.maxStamina){
+                    this.stamina = this.maxStamina
+                    this.loadingStamina=false
+                    clearInterval(loader)
+                }else if(this.stamina === this.maxStamina){
+                    this.loadingStamina=false
+                    clearInterval(loader)
+                }
+            },1000)
+    
         }
     };
     this.move = function(direction){
@@ -147,7 +187,7 @@ function Villain(id,maxHp,counter){
             this.img = this.id+"_rt1.gif"
         }
         if(collisionCheck(charIcon,player.direction,topPos,leftPos,compIcon,compTopPos,compLeftPos)==true){
-            player.attacks.melee(this)
+            player.attacks.melee.hit(this)
             this.counter()
         }
 
@@ -159,20 +199,21 @@ function Villain(id,maxHp,counter){
     }
 }
 
-
-var attacks ={
-    melee:function(target){
-        target.hp = target.hp-10
-    },
-    punch:{
-        staminaCost:10,
-        damage:10
-    },
-    kick:{
-        staminaCost:15,
-        damage:15
+function Attack(damage,staminaCost){
+    this.damage=damage;
+    this.staminaCost=staminaCost;
+    this.hit=function(target){
+        if(player.stamina>staminaCost){
+            target.hp-=this.damage;
+            player.stamina-=this.staminaCost;
+        }
     }
 }
+
+var attacks ={
+    melee : new Attack(10,10)
+}
+
 function changePosition(element,direction,topPos,leftPos){
     if (direction == "bk"){
         element.css({
@@ -289,6 +330,7 @@ document.onkeydown = function(){
        game.won()
     }
     death(player)
+    player.staminaLoad()
 
     
 
