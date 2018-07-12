@@ -6,25 +6,50 @@ $(function(){
 });
 
 var game = {
+    won:function(){
 
+    },
+    lost:function(){
+
+    }
 }
 
 function Hero(id,hp,maxStamina,attacks,staminaLoadSpeed){
     this.id=id;
     this.create = function(top,left){
+        var charDiv = $("<div>")
         var img = $("<img>")
         img.attr("src","assets/images/sprites/"+this.img)
-        img.attr("id",this.id)
-        img.css({
+        charDiv.attr("id",this.id)
+        charDiv.css({
             "position":"fixed",
             "top":top+"px",
             "left":left+"px"
         })
-        $("body").append(img)
+        charDiv.append(img)
+        var health = $("<div>").addClass("progress");
+        health.css({
+            'height':'5px',
+            'margin-bottom':'10px'
+        })
+        var bar = $("<div>").addClass("progress-bar bg-danger");
+        bar.attr("role","progressbar");
+        bar.attr("id",this.id+"Health")
+        bar.css({
+            'width':String(this.hp)+"%"
+        })
+        health.append(bar)
+        charDiv.prepend(health)
+        $("body").append(charDiv)
+
     };
     this.update = function(){
-        var img = $("#"+this.id)
+        var img = $("#"+this.id).children().last()
         img.attr("src","assets/images/sprites/"+this.img)
+        var health = $("#"+this.id+"Health")
+        health.css({
+            'width':String(this.hp)+'%'
+        })
     },
     this.img= this.id+"_fr1.gif"
     this.hp=hp;
@@ -41,12 +66,7 @@ function Hero(id,hp,maxStamina,attacks,staminaLoadSpeed){
     this.move = function(direction){
         var charIcon = $("#"+this.id)
         var topPos = Number(charIcon.css("top").split("px")[0])
-        var leftPos = Number(charIcon.css("left").split("px")[0])
-        
-        var compIcon = $("#"+comp.id)
-        var compTopPos = Number(compIcon.css("top").split("px")[0])
-        var compLeftPos = Number(compIcon.css("left").split("px")[0])
-        
+        var leftPos = Number(charIcon.css("left").split("px")[0])       
         changePosition(charIcon,direction,topPos,leftPos)
 
         if (this.img.search(direction+"1")>-1){
@@ -55,32 +75,54 @@ function Hero(id,hp,maxStamina,attacks,staminaLoadSpeed){
         else{
             this.img=this.id+"_"+direction+"1.gif";
         }
-
-
-        
         this.update()
+    };
+    this.dead=function(){
+        game.lost()
     }
 }
 
-function Villain(id,hp,counter){
+function Villain(id,maxHp,counter){
     this.id=id;
     this.update = function(){
-        var img = $("#"+this.id)
+        var img = $("#"+this.id).children().last()
         img.attr("src","assets/images/sprites/"+this.img)
+        var health = $("#"+this.id+"Health")
+        health.css({
+            'width':String((this.hp/maxHp)*100)+"%"
+        })
     };
     this.img= this.id+"_fr1.gif";
-    this.hp=hp;
-    this.counter=counter;
+    this.hp=maxHp;
+    this.counter=function(){
+        player.hp-=counter;
+    };
     this.create = function(top,left){
+        var charDiv = $("<div>")
         var img = $("<img>")
         img.attr("src","assets/images/sprites/"+this.img)
-        img.attr("id",this.id)
-        img.css({
+        charDiv.attr("id",this.id)
+        charDiv.css({
             "position":"fixed",
             "top":top+"px",
             "left":left+"px"
         })
-        $("body").append(img)
+        charDiv.append(img)
+        var health = $("<div>").addClass("progress");
+        health.css({
+            'height':'5px',
+            'margin-bottom':'10px'
+        })
+        var bar = $("<div>").addClass("progress-bar bg-danger");
+        bar.attr("role","progressbar");
+        bar.attr("id",this.id+"Health")
+        bar.css({
+            'width':String((this.hp/maxHp)*100)+"%"
+        })
+        health.append(bar)
+        charDiv.prepend(health)
+        $("body").append(charDiv)
+
     };
     this.move=function(){
         var charIcon = $("#"+player.id)
@@ -90,7 +132,8 @@ function Villain(id,hp,counter){
         var compIcon = $("#"+this.id)
         var compTopPos = Number(compIcon.css("top").split("px")[0])
         var compLeftPos = Number(compIcon.css("left").split("px")[0])
-        //villain always looks towards the player
+       
+        //villain turns towards the player when player is close enough
         if (0<compTopPos-topPos && compTopPos-topPos<80 && (compLeftPos-leftPos)**2<(-30)**2){
             this.img = this.id+"_bk1.gif"
         }
@@ -103,14 +146,24 @@ function Villain(id,hp,counter){
         if (0>compLeftPos-leftPos && compLeftPos-leftPos>-80 && (compTopPos-topPos)**2<(-30)**2){
             this.img = this.id+"_rt1.gif"
         }
-        console.log(collisionCheck(charIcon,player.direction,topPos,leftPos,compIcon,compTopPos,compLeftPos))
+        if(collisionCheck(charIcon,player.direction,topPos,leftPos,compIcon,compTopPos,compLeftPos)==true){
+            player.attacks.melee(this)
+            this.counter()
+        }
 
         this.update()
+    }
+    this.dead=function(){
+        this.counter=0
+        comp.pop(this)
     }
 }
 
 
 var attacks ={
+    melee:function(target){
+        target.hp = target.hp-10
+    },
     punch:{
         staminaCost:10,
         damage:10
@@ -120,7 +173,6 @@ var attacks ={
         damage:15
     }
 }
-
 function changePosition(element,direction,topPos,leftPos){
     if (direction == "bk"){
         element.css({
@@ -150,37 +202,66 @@ function placeCharacter(element,topPos,leftPos){
     })
 }
 function collisionCheck(charIcon,direction,topPos,leftPos,compIcon,compTopPos,compLeftPos){
-    if((compTopPos-topPos==-40 && (compLeftPos-leftPos)**2<(-40)**2)){
+    //returns true if collision occurs so that melee attack can be registered
+    //coming from bottom of npc
+    if((0>compTopPos-topPos && compTopPos-topPos>-50 && (compLeftPos-leftPos)**2<(-30)**2)){
         if (direction=="bk"){
             placeCharacter(charIcon,topPos+30,leftPos)
             return true
         }
     }
-    if((compTopPos-topPos==+40 && (compLeftPos-leftPos)**2<(-40)**2)){
+    ////coming from top of npc
+    if((0<compTopPos-topPos && compTopPos-topPos<40 && (compLeftPos-leftPos)**2<(-30)**2)){
          if(direction == "fr"){
             placeCharacter(charIcon,topPos-30,leftPos)
             return true
         }
     }
-    if ((compTopPos-topPos)**2<(-40)**2 && (compLeftPos-leftPos)==(-40)){
+    //coming from right of npc
+    if ((0>compLeftPos-leftPos && compLeftPos-leftPos>-40 && (compTopPos-topPos)**2<(-30)**2)){
         if(direction == "lf"){
             placeCharacter(charIcon,topPos,leftPos+30)
             return true
         }
     }
-    if ((compTopPos-topPos)**2<(-40)**2 && (compLeftPos-leftPos)==(40)){
+    //coming from left of npc
+    if ((0<compLeftPos-leftPos && compLeftPos-leftPos<40 && (compTopPos-topPos)**2<(-30)**2)){
         if(direction == "rt"){
             placeCharacter(charIcon,topPos,leftPos-30)
             return true
         }
     }
 }
+function death(character){
+    if(character.hp<=0){
+        var positionList = ["_fr1.gif","_lf1.gif","_bk1.gif","_rt1.gif"]
+        var i=0
+        var r=0
+        var deathSeq = setInterval(()=>{
+            deathAnim(positionList[r],character)
+            console.log(positionList[i])
+            r+=1
+            if (r==4){r=0}
+            i+=1
+            if (i==8){
+                clearInterval(deathSeq)
+                $("#"+character.id).remove()
+            }
+        },200)
+        character.dead()
+    }
+}
+function deathAnim(position,character){
+    character.img=character.id+position;
+    character.update();
+}
+
 var devil = new Villain('dvl1',100,10);
-var spider = new Villain('spd1',100,10)
-var knight = new Hero('gsd1',100,100,[],1)
+var spider = new Villain('spd1',50,2)
+var knight = new Hero('gsd1',100,100,attacks,1)
 
 var player = knight;
-var comp = devil;
+var comp = [devil,spider]
 
 document.onkeydown = function(){
     var action = event.key
@@ -200,7 +281,16 @@ document.onkeydown = function(){
         player.direction = "rt"
         player.move('rt')
     }
-    comp.move()
-    spider.move()
+    for(var i in comp){
+        comp[i].move()
+        death(comp[i])
+    }
+    if(comp.length==0){
+       game.won()
+    }
+    death(player)
+
+    
 
 }
+
