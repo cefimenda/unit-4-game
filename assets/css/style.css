@@ -1,3 +1,27 @@
 body{
+    background-size:cover;
+    background-image: url("../images/background.jpg")
+}
 
+.modal-title{
+    font-size:50px;
+    font-family: 'Cinzel', serif;
+    text-align: center;
+
+}
+.body-instruction, .section-title{
+    text-align: center;
+    font-family: 'Nanum Myeongjo', serif;
+
+}
+.section-title{
+    font-weight: bold;
+    font-family: 'Cinzel',serif;
+}
+.heroes{
+    right:auto;
+
+}
+.villains{
+    left:auto;
 }

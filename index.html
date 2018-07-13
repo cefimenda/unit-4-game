@@ -9,10 +9,65 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js" integrity="sha384-smHYKdLADwkXOn1EmN1qk/HfnUcbVRZyYmZ4qpPea6sjB/pTJ0euyQp0Mk8ck+5T" crossorigin="anonymous"></script>
     <link rel="stylesheet" href="assets/css/style.css">
+    <link href="https://fonts.googleapis.com/css?family=Cinzel|Nanum+Myeongjo" rel="stylesheet">
     <script src ="assets/javascript/game.js"></script>
+    <script src ="assets/javascript/levelUpModal.js"></script>
+    <script src ="assets/javascript/charConstructors.js"></script>
+    <script src ="assets/javascript/screen.js"></script>
+
     <title>Document</title>
 </head>
 <body>
-    
+    <!-- LEVELUP MODAL -->
+    <div class="modal" id = "levelUpModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title mx-auto w-100">Level Up!</h5>
+                </div>
+                <div class="modal-body">
+                    <p class = "body-instruction">Select how you want to improve your character.</p>
+                    <div class="row">
+                        <div class="col-12 col-sm-6 col-md-4 text-center">
+                            <p class = "section-title">Health</p>
+                            <button class="btn-outline-danger upgradeButton mb-3" value='increaseMaxHealth' descript='Your max health level will be increased 20 points.'>Max Health +20</button>
+                        </div>
+                        <div class="col-12 col-sm-6 col-md-4 text-center">
+                            <p class = "section-title">Stamina</p>
+                            <button class="btn-outline-success upgradeButton mb-3" value='increaseMaxStamina' descript='Your max stamina level will be increased 20 points.'>Max Stamina +20</button>
+                            <button class="btn-outline-success upgradeButton mb-3" value='increaseStaminaLoad' descript='Your stamina will regenerate 2 points per second faster.'>Stamina +2/sec</button>
+                        </div>
+                        <div class="col-12 col-sm-6 col-md-4 text-center">
+                            <p class = "section-title">Strength</p>
+                            <button class="btn-outline-secondary upgradeButton mb-3" value='increaseAttack' descript='Your melee attacks will cause 10 points more damage.'>Melee Damage +10</button>
+                            <button class="btn-outline-secondary upgradeButton mb-3" value='increaseDefense' descript='Your enemies will cause 10 points less damage to you.'>Counter Defense +10</button>
+                        </div>
+                        <!-- <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+                            <p class = "section-title">New Attack</p>
+                            <button class="btn-outline-dark upgradeButton mb-3" value='newAttack' descript='Your enemies will cause 10 points less damage to you.'>Counter Defense +10</button>
+                        </div> -->
+                    </div>
+                </div>
+                <div class="text-center">
+                    <div class="row">
+                        <div class="col-12 text-center mx-auto  ">
+                            <p class = 'upgradeDescription body-instruction'></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- SELECT CHARACTER -->
+    <div class="row">
+        <div class="col-6">
+            <div class="fixed-bottom heroes bg-light">
+            </div>
+        </div>
+        <div class="col-6">
+            <div class="fixed-bottom villains bg-light">
+            </div>
+        </div>
+    </div>
 </body>
 </html>
