@@ -25,3 +25,26 @@ body{
 .villains{
     left:auto;
 }
+.selectPlayer{
+    position: fixed;
+    top: 80%;
+    left:0;
+    font-weight: bold;
+    font-family: 'Cinzel',serif;
+}
+.selectVillains{
+    position: fixed;
+    top: 80%;
+    right:0;
+    font-weight: bold;
+    font-family: 'Cinzel',serif;
+}
+#start{
+    font-weight: bold;
+    font-family: 'Cinzel',serif;
+}
+.btn-col{
+    position:fixed;
+    top:70%;
+
+}

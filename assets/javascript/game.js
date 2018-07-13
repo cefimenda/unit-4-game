@@ -1,45 +1,47 @@
 
 $(function(){
-    player.create(300,450);
-    for (var i in comp){
-        comp[i].create((i+1)*3,(i+1)*6)
-    }
-
-    document.onkeydown = function(){
-        var action = event.key
-        if(action === "ArrowUp"){
-            player.direction = "bk"
-            player.move('bk')
-        }
-        if(action === "ArrowDown"){
-            player.direction = "fr"
-            player.move('fr')
-        }
-        if(action === "ArrowLeft"){
-            player.direction = "lf"
-            player.move('lf')
-        }
-        if(action === "ArrowRight"){
-            player.direction = "rt"
-            player.move('rt')
-        }
-        for(var i in comp){
-            comp[i].move()
-            death(comp[i])
-        }
-        if(comp.length==0){
-           game.won()
-        }
-        death(player)
-        player.staminaLoad()
     
+    document.onkeydown = function(){
+        if (game.inProgress){
+            var action = event.key
+            if(action === "ArrowUp"){
+                player.direction = "bk"
+                player.move('bk')
+            }else
+            if(action === "ArrowDown"){
+                player.direction = "fr"
+                player.move('fr')
+            }else
+            if(action === "ArrowLeft"){
+                player.direction = "lf"
+                player.move('lf')
+            }else
+            if(action === "ArrowRight"){
+                player.direction = "rt"
+                player.move('rt')
+            }else{return}
+
+            for(var i in comp){
+                comp[i].move()
+                death(comp[i])
+            }
+            if(comp.length==0){
+               game.won()
+            }
+            death(player)
+            player.staminaLoad()
+        }
     }
+    $("#start").click(function(){
+        game.start()
+        $(this).addClass('d-none')
+    });
 });
 
 
 var game = {
+    inProgress : false,
     won:function(){
-
     },
     lost:function(){
 
@@ -49,9 +51,40 @@ var game = {
         var newTarg = game.targetXp**(1+player.level/50);
         game.targetXp = newTarg
     },
-    dying:false
+    dying:false,
+    start: function(){
+        var locList=[]
+        for (var i in comp){
+            var coordinates = getRandCoordinate()
+            while(checkCoordinates(coordinates,locList)=='again'){
+                coordinates = getRandCoordinate()
+            }
+            locList.push(coordinates)
+            comp[i].create(coordinates[0],coordinates[1])
+        }
+        player.create(500,1200)
+        game.inProgress= true
+        $(".selectVillains").hide()
+        $('.selectPlayer').hide()
+    }   
 }
 
+function getRandCoordinate(){
+    var top = Math.floor(Math.random()*300)+200
+    var left=Math.floor(Math.random()*1000)
+    return[top,left]
+}
+function checkCoordinates(coordinates,locList){ //makes sure that villains don't accidentally overlap
+    var newTop = coordinates[0]
+    var newLeft = coordinates[1]
+    for (var i in locList){
+        var oldTop = locList[i][0]
+        var oldLeft = locList[i][1]
+        if (((oldLeft-newLeft)**2)<(30**2) && ((oldTop-newTop)**2)<(30**2)){
+            return 'again'
+        }    
+    }
+}
 
 function Attack(damage,staminaCost){
     this.damage=damage;
@@ -154,14 +187,7 @@ function deathAnim(position,character){
     character.img=character.id+position;
     character.update();
 }
-function levelUp(){
-    if(player.xp>=game.targetXp){
-        $("#levelUpModal").modal('toggle')
-        player.level+=1;
-        player.xp-=game.targetXp;
-        game.newTargetXp();
-    }
-}
+
 //lvl 1 Villain('ID',[maxHP: 50,counter:2,killXp:25],lvl) lvl 2 Villain('ID',100,4,50) etc...
 
 

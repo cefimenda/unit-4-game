@@ -73,7 +73,8 @@ function Hero(id,maxHp,maxStamina,attacks,staminaLoadSpeed){
             var level = $("<div>").text("LVL: "+this.level)
             level.attr("id",this.id+"Level")
             level.css({
-                "font-size":"10px"
+                "font-size":"10px",
+                'color':'white'
             })
             charDiv.append(level)
             $("body").append(charDiv)
@@ -151,7 +152,7 @@ function Villain(id,lvl){
 
     this.id=id;
     this.update = function(){
-        var img = $("#"+this.id).children().last()
+        var img = $("#"+this.id).children().last().prev()
         img.attr("src","assets/images/sprites/"+this.img)
         var health = $("#"+this.id+"Health")
         health.css({
@@ -188,6 +189,18 @@ function Villain(id,lvl){
         health.append(bar)
         charDiv.prepend(health)
         $("body").append(charDiv)
+
+        //LVL Text
+        {
+            var level = $("<div>").text("LVL: "+lvl)
+            level.attr("id",this.id+"Level")
+            level.css({
+                "font-size":"10px",
+                "color":"white"
+            })
+            charDiv.append(level)
+            $("body").append(charDiv)
+        }
 
     };
     this.move=function(){
@@ -229,11 +242,6 @@ function Villain(id,lvl){
         this.move=null
     }
 }
-var devil = new Villain('dvl1',5);
-var spider = new Villain('spd1',1);
-var npc1 = new Villain('npc1',2);
-var npc2 = new Villain ('npc2',2);
-var knight = new Hero('scr1',100,100,defaultAttacks,2)
 
-var player = knight;
-var comp = [devil,spider,npc1,npc2]
+var player;
+var comp = []

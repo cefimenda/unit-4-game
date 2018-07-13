@@ -18,6 +18,11 @@
     <title>Document</title>
 </head>
 <body>
+    <div class="row">
+        <div class="col-12 btn-col text-center">
+            <button class="btn-warning btn-lg d-none" id ="start">Start Game</button>
+        </div>
+    </div>
     <!-- LEVELUP MODAL -->
     <div class="modal" id = "levelUpModal" tabindex="-1" role="dialog">
         <div class="modal-dialog modal-lg" role="document">
@@ -61,11 +66,13 @@
     <!-- SELECT CHARACTER -->
     <div class="row">
         <div class="col-6">
+            <h1 class ="text-warning selectPlayer"> Select Your Character</h1>
             <div class="fixed-bottom heroes bg-light">
             </div>
         </div>
         <div class="col-6">
-            <div class="fixed-bottom villains bg-light">
+            <h1 class ="text-warning selectVillains d-none"> Select Villains</h1>
+            <div class="fixed-bottom villains bg-light d-none">
             </div>
         </div>
     </div>

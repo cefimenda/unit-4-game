@@ -26,3 +26,12 @@ $(function(){
         player.update();
     });
 });
+
+function levelUp(){
+    if(player.xp>=game.targetXp && player.hp>0){
+        $("#levelUpModal").modal('toggle')
+        player.level+=1;
+        player.xp-=game.targetXp;
+        game.newTargetXp();
+    }
+}
