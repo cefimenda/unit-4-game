@@ -1,8 +1,9 @@
 
 $(function(){
-    devil.create(300,600);
-    knight.create(300,450);
-    spider.create(200,400);
+    player.create(300,450);
+    for (var i in comp){
+        comp[i].create((i+1)*3,(i+1)*6)
+    }
 });
 
 var game = {
@@ -11,59 +12,97 @@ var game = {
     },
     lost:function(){
 
+    },
+    targetXp:100,
+    newTargetXp:function(){
+        var newTarg = game.targetXp**(1+player.level/50);
+        game.targetXp = newTarg
     }
 }
 
-function Hero(id,hp,maxStamina,attacks,staminaLoadSpeed){
+function Hero(id,maxHp,maxStamina,attacks,staminaLoadSpeed){
     this.id=id;
     this.create = function(top,left){
         var charDiv = $("<div>")
-        var img = $("<img>")
-        img.attr("src","assets/images/sprites/"+this.img)
-        charDiv.attr("id",this.id)
-        charDiv.css({
-            "position":"fixed",
-            "top":top+"px",
-            "left":left+"px"
-        })
-        charDiv.append(img)
-
+        //PLAYER ICON
+        {
+            var img = $("<img>")
+            img.addClass("mx-auto d-block")
+            img.attr("src","assets/images/sprites/"+this.img)
+            charDiv.attr("id",this.id)
+            charDiv.css({
+                "position":"fixed",
+                "top":top+"px",
+                "left":left+"px"
+            })
+            charDiv.append(img)
+        }
+       
         // STAMINA BAR
-        var stamina = $("<div>").addClass("progress");
-        stamina.css({
-            'height':'5px',
-            'margin-bottom':'10px'
-        })
-        var staminaBar = $("<div>").addClass("progress-bar bg-success");
-        staminaBar.attr("role","progressbar");
-        staminaBar.attr("id",this.id+"Stamina")
-        staminaBar.css({
-            'width':String(this.stamina)+"%"
-        })
-        stamina.append(staminaBar)
-        charDiv.prepend(stamina)
-
+        {
+            var stamina = $("<div>").addClass("progress");
+            stamina.css({
+                'height':'5px',
+                'margin-bottom':'10px'
+            })
+            var staminaBar = $("<div>").addClass("progress-bar bg-success");
+            staminaBar.attr("role","progressbar");
+            staminaBar.attr("id",this.id+"Stamina")
+            staminaBar.css({
+                'width':String(this.stamina)+"%"
+            })
+            stamina.append(staminaBar)
+            charDiv.prepend(stamina)
+    
+        }
+       
         //HEALTH BAR
-        var health = $("<div>").addClass("progress");
-        health.css({
-            'height':'5px',
-            'margin-bottom':'1px'
-        })
-        var healthBar = $("<div>").addClass("progress-bar bg-danger");
-        healthBar.attr("role","progressbar");
-        healthBar.attr("id",this.id+"Health")
-        healthBar.css({
-            'width':String(this.hp)+"%"
-        })
-        health.append(healthBar)
-        charDiv.prepend(health)
+        {
+            var health = $("<div>").addClass("progress");
+            health.css({
+                'height':'5px',
+                'margin-bottom':'1px'
+            })
+            var healthBar = $("<div>").addClass("progress-bar bg-danger");
+            healthBar.attr("role","progressbar");
+            healthBar.attr("id",this.id+"Health")
+            healthBar.css({
+                'width':String(this.hp)+"%"
+            })
+            health.append(healthBar)
+            charDiv.prepend(health)
+        }
 
-        
-        $("body").append(charDiv)
-
+        //XP BAR
+        {
+            var xp = $("<div>").addClass("progress");
+            xp.css({
+                'height':'2px',
+                'margin-top':'5px'
+            })
+            var xpBar = $("<div>").addClass("progress-bar bg-warning");
+            xpBar.attr("role","progressbar");
+            xpBar.attr("id",this.id+"Xp")
+            xpBar.css({
+                'width':String(this.xp)+"%"
+            })
+            xp.append(xpBar)
+            charDiv.append(xp)
+        }
+       
+        //LVL Text
+        {
+            var level = $("<div>").text("LVL: "+this.level)
+            level.attr("id",this.id+"Level")
+            level.css({
+                "font-size":"10px"
+            })
+            charDiv.append(level)
+            $("body").append(charDiv)
+        }
     };
     this.update = function(){
-        var img = $("#"+this.id).children().last()
+        var img = $("#"+this.id).children().last().prev().prev()
         img.attr("src","assets/images/sprites/"+this.img)
         var health = $("#"+this.id+"Health")
         health.css({
@@ -73,22 +112,27 @@ function Hero(id,hp,maxStamina,attacks,staminaLoadSpeed){
         stamina.css({
             'width':String(this.stamina)+'%'
         })
+        var xp = $("#"+this.xp+"Stamina")
+        xp.css({
+            'width':String((this.xp/game.targetXp)*100)+'%'
+        })
+        var level = $("#"+this.id+"Level")
+        level.text("LVL: "+this.level)
     },
     this.img= this.id+"_fr1.gif"
-    this.hp=hp;
+    this.xp=0;
+    this.level=1;
+    this.hp=maxHp;
+    this.maxHp=maxHp
     this.maxStamina=maxStamina;
     this.stamina=maxStamina;
     this.attacks=attacks;
     this.loadingStamina = false;
     this.staminaLoadSpeed=staminaLoadSpeed
     this.staminaLoad = function(){
-        console.log(this.loadingStamina)
         if (this.stamina<this.maxStamina && this.loadingStamina===false){
             this.loadingStamina=true
             var loader = setInterval(()=>{
-                console.log(this.stamina)
-                console.log(this.maxStamina)
-                console.log(this.staminaLoadSpeed)
                 this.update()
                 this.stamina+=this.staminaLoadSpeed;
                 if (this.stamina>this.maxStamina){
@@ -122,7 +166,7 @@ function Hero(id,hp,maxStamina,attacks,staminaLoadSpeed){
     }
 }
 
-function Villain(id,maxHp,counter){
+function Villain(id,maxHp,counter,killXp){
     this.id=id;
     this.update = function(){
         var img = $("#"+this.id).children().last()
@@ -196,6 +240,8 @@ function Villain(id,maxHp,counter){
     this.dead=function(){
         this.counter=0
         comp.pop(this)
+        player.xp+=killXp
+        levelUp()
     }
 }
 
@@ -210,8 +256,11 @@ function Attack(damage,staminaCost){
     }
 }
 
-var attacks ={
+var defaultAttacks ={
     melee : new Attack(10,10)
+}
+var advancedAttacks={
+
 }
 
 function changePosition(element,direction,topPos,leftPos){
@@ -280,7 +329,6 @@ function death(character){
         var r=0
         var deathSeq = setInterval(()=>{
             deathAnim(positionList[r],character)
-            console.log(positionList[i])
             r+=1
             if (r==4){r=0}
             i+=1
@@ -296,10 +344,20 @@ function deathAnim(position,character){
     character.img=character.id+position;
     character.update();
 }
-
-var devil = new Villain('dvl1',100,10);
-var spider = new Villain('spd1',50,2)
-var knight = new Hero('gsd1',100,100,attacks,1)
+function levelUp(){
+    if(player.xp>=game.targetXp){
+        player.level+=1;
+        player.xp-=game.targetXp;
+        game.newTargetXp();
+        player.update();
+        player.hp=player.maxHp
+        alert("LEVEL UP!")
+    }
+}
+//lvl 1 Villain('ID',50,2,25) lvl 2 Villain('ID',100,4,50) etc...
+var devil = new Villain('dvl1',250,10,125);
+var spider = new Villain('spd1',50,2,25)
+var knight = new Hero('scr1',100,100,defaultAttacks,1)
 
 var player = knight;
 var comp = [devil,spider]
