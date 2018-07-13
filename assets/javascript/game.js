@@ -17,7 +17,8 @@ var game = {
     newTargetXp:function(){
         var newTarg = game.targetXp**(1+player.level/50);
         game.targetXp = newTarg
-    }
+    },
+    dying:false
 }
 
 function Hero(id,maxHp,maxStamina,attacks,staminaLoadSpeed){
@@ -166,14 +167,18 @@ function Hero(id,maxHp,maxStamina,attacks,staminaLoadSpeed){
     }
 }
 
-function Villain(id,maxHp,counter,killXp){
+function Villain(id,lvl){
+    var maxHp = lvl*50;
+    var counter = lvl*2;
+    var killXp = lvl*25;
+
     this.id=id;
     this.update = function(){
         var img = $("#"+this.id).children().last()
         img.attr("src","assets/images/sprites/"+this.img)
         var health = $("#"+this.id+"Health")
         health.css({
-            'width':String((this.hp/maxHp)*100)+"%"
+            'width':String((this.hp/(maxHp))*100)+"%"
         })
     };
     this.img= this.id+"_fr1.gif";
@@ -209,39 +214,42 @@ function Villain(id,maxHp,counter,killXp){
 
     };
     this.move=function(){
-        var charIcon = $("#"+player.id)
-        var topPos = Number(charIcon.css("top").split("px")[0])
-        var leftPos = Number(charIcon.css("left").split("px")[0])
-        
-        var compIcon = $("#"+this.id)
-        var compTopPos = Number(compIcon.css("top").split("px")[0])
-        var compLeftPos = Number(compIcon.css("left").split("px")[0])
-       
-        //villain turns towards the player when player is close enough
-        if (0<compTopPos-topPos && compTopPos-topPos<80 && (compLeftPos-leftPos)**2<(-30)**2){
-            this.img = this.id+"_bk1.gif"
+        if(game.dying===false){ //avoids accidental movements while a villain is dying
+            var charIcon = $("#"+player.id)
+            var topPos = Number(charIcon.css("top").split("px")[0])
+            var leftPos = Number(charIcon.css("left").split("px")[0])
+            
+            var compIcon = $("#"+this.id)
+            var compTopPos = Number(compIcon.css("top").split("px")[0])
+            var compLeftPos = Number(compIcon.css("left").split("px")[0])
+           
+            //villain turns towards the player when player is close enough
+            if (0<compTopPos-topPos && compTopPos-topPos<80 && (compLeftPos-leftPos)**2<(-30)**2){
+                this.img = this.id+"_bk1.gif"
+            }
+            if (0>compTopPos-topPos && compTopPos-topPos>-80 && (compLeftPos-leftPos)**2<(-30)**2){
+                this.img = this.id+"_fr1.gif"
+            }
+            if (0<compLeftPos-leftPos && compLeftPos-leftPos<80 && (compTopPos-topPos)**2<(-30)**2){
+                this.img = this.id+"_lf1.gif"
+            }
+            if (0>compLeftPos-leftPos && compLeftPos-leftPos>-80 && (compTopPos-topPos)**2<(-30)**2){
+                this.img = this.id+"_rt1.gif"
+            }
+            if(collisionCheck(charIcon,player.direction,topPos,leftPos,compIcon,compTopPos,compLeftPos)==true){
+                player.attacks.melee.hit(this)
+                this.counter()
+            }
+    
+            this.update()
         }
-        if (0>compTopPos-topPos && compTopPos-topPos>-80 && (compLeftPos-leftPos)**2<(-30)**2){
-            this.img = this.id+"_fr1.gif"
-        }
-        if (0<compLeftPos-leftPos && compLeftPos-leftPos<80 && (compTopPos-topPos)**2<(-30)**2){
-            this.img = this.id+"_lf1.gif"
-        }
-        if (0>compLeftPos-leftPos && compLeftPos-leftPos>-80 && (compTopPos-topPos)**2<(-30)**2){
-            this.img = this.id+"_rt1.gif"
-        }
-        if(collisionCheck(charIcon,player.direction,topPos,leftPos,compIcon,compTopPos,compLeftPos)==true){
-            player.attacks.melee.hit(this)
-            this.counter()
-        }
-
-        this.update()
     }
+       
     this.dead=function(){
-        this.counter=0
-        comp.pop(this)
+        comp.splice(comp.indexOf(this),1)
         player.xp+=killXp
         levelUp()
+        this.move=null
     }
 }
 
@@ -324,6 +332,7 @@ function collisionCheck(charIcon,direction,topPos,leftPos,compIcon,compTopPos,co
 }
 function death(character){
     if(character.hp<=0){
+        game.dying=true;
         var positionList = ["_fr1.gif","_lf1.gif","_bk1.gif","_rt1.gif"]
         var i=0
         var r=0
@@ -335,6 +344,7 @@ function death(character){
             if (i==8){
                 clearInterval(deathSeq)
                 $("#"+character.id).remove()
+                game.dying=false;
             }
         },200)
         character.dead()
@@ -354,13 +364,15 @@ function levelUp(){
         alert("LEVEL UP!")
     }
 }
-//lvl 1 Villain('ID',50,2,25) lvl 2 Villain('ID',100,4,50) etc...
-var devil = new Villain('dvl1',250,10,125);
-var spider = new Villain('spd1',50,2,25)
+//lvl 1 Villain('ID',[maxHP: 50,counter:2,killXp:25],lvl) lvl 2 Villain('ID',100,4,50) etc...
+var devil = new Villain('dvl1',5);
+var spider = new Villain('spd1',1);
+var npc1 = new Villain('npc1',2);
+var npc2 = new Villain ('npc2',2);
 var knight = new Hero('scr1',100,100,defaultAttacks,1)
 
 var player = knight;
-var comp = [devil,spider]
+var comp = [devil,spider,npc1,npc2]
 
 document.onkeydown = function(){
     var action = event.key
@@ -389,8 +401,6 @@ document.onkeydown = function(){
     }
     death(player)
     player.staminaLoad()
-
-    
 
 }
 
