@@ -1,5 +1,8 @@
+
+//hero constructor to be run when a new hero object is created.
 function Hero(id,maxHp,maxStamina,attacks,staminaLoadSpeed){
     this.id=id;
+    //for initial creation
     this.create = function(top,left){
         var charDiv = $("<div>")
         //PLAYER ICON
@@ -80,12 +83,13 @@ function Hero(id,maxHp,maxStamina,attacks,staminaLoadSpeed){
             $("body").append(charDiv)
         }
     };
+    //to update the health/stamina/xp bars, lvl text and image direction
     this.update = function(){
         var img = $("#"+this.id).children().last().prev().prev()
         img.attr("src","assets/images/sprites/"+this.img)
         var health = $("#"+this.id+"Health")
         health.css({
-            'width':String(this.hp)+'%'
+            'width':String((this.hp/player.maxHp)*100)+'%'
         })
         var stamina = $("#"+this.id+"Stamina")
         stamina.css({
@@ -101,11 +105,14 @@ function Hero(id,maxHp,maxStamina,attacks,staminaLoadSpeed){
     this.img= this.id+"_fr1.gif"
     this.xp=0;
     this.level=1;
+    this.defense = 0;
     this.hp=maxHp;
     this.maxHp=maxHp;
     this.maxStamina=maxStamina;
     this.stamina=maxStamina;
+    //starts out with default attacks which currently only has melee
     this.attacks=attacks;
+    //boolean check to make sure staminaLoad method doesnt run multiple times
     this.loadingStamina = false;
     this.staminaLoadSpeed=staminaLoadSpeed
     this.staminaLoad = function(){
@@ -145,6 +152,8 @@ function Hero(id,maxHp,maxStamina,attacks,staminaLoadSpeed){
     }
 }
 
+//lvl 1 Villain('ID',[maxHP: 50,counter:2,killXp:25],lvl) lvl 2 Villain('ID',100,4,50) etc...
+//villain object constructor to create villains. their strength and healths depend on their lvl.
 function Villain(id,lvl){
     var maxHp = lvl*50;
     var counter = lvl*2;
@@ -162,7 +171,9 @@ function Villain(id,lvl){
     this.img= this.id+"_fr1.gif";
     this.hp=maxHp;
     this.counter=function(){
-        player.hp-=counter;
+        if (player.defense<=counter){
+            player.hp-= counter - player.defense;
+        }
     };
     this.create = function(top,left){
         var charDiv = $("<div>")
@@ -226,15 +237,14 @@ function Villain(id,lvl){
             if (0>compLeftPos-leftPos && compLeftPos-leftPos>-80 && (compTopPos-topPos)**2<(-30)**2){
                 this.img = this.id+"_rt1.gif"
             }
+            //we check for collisions on the villain side so that it is easier to point to which villain the user has attacked. (there can only be one player but there are multiple villains so this.counter doesnt need to be shown who to attack but player.attacks.melee does)
             if(collisionCheck(charIcon,player.direction,topPos,leftPos,compIcon,compTopPos,compLeftPos)==true){
                 player.attacks.melee.hit(this)
                 this.counter()
             }
-    
             this.update()
         }
     }
-       
     this.dead=function(){
         comp.splice(comp.indexOf(this),1)
         player.xp+=killXp

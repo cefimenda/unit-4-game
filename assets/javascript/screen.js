@@ -1,12 +1,12 @@
 $(function(){
+    //used for the walking animation when hovered on a character in the select character (hero/villain) bar.
     var isWalking = false
     var walking;
 
     characterSelectorBar()
-    
+    //checks for both static and dynamic elements in the character bar and animates them as if they are walking when mouseenters. stops animation when mouseleaves
     $('.villainsParent').on({
         mouseenter:function(){
-            console.log('dyn')
             if (isWalking ==false){
                 isWalking = true
                 walking = setInterval(()=>{
@@ -21,7 +21,6 @@ $(function(){
     },'.char');
     $('.heroesParent').on({
         mouseenter:function(){
-            console.log('dyn')
             if (isWalking ==false){
                 isWalking = true
                 walking = setInterval(()=>{
@@ -35,7 +34,7 @@ $(function(){
         }
     },'.char');
     
-
+//when user selects their character the herobar is removed and villain bar appears. also a new Hero object is created with the players choice of character
     $('.heroesParent').on('click','.hero',function(){
         player = new Hero($(this).attr('name'),100,100,defaultAttacks,2)
         $(".heroes").remove()
@@ -43,6 +42,9 @@ $(function(){
         $(".villains").removeClass('d-none')
         $(".selectVillains").removeClass('d-none')
     });
+//when user selects villains each selection is stored in a list called comp. 
+//each selection is given a random level(between 1- (game.level+3)) and a new Villain object is created with the name of selection (stored inside the img) and randomized level
+//no item can be selected twice, so each item is removed when clicked
     $('.villainsParent').on('click','.villain',function(){
         var name = $(this).attr('name');
         var lvl = Math.floor(Math.random()*(game.level+3))+1
@@ -53,7 +55,7 @@ $(function(){
         $("#start").removeClass('d-none')
     });
 });
-
+//walking animation
 function walkAnim(img){
     var link = img.attr('src')
     var name = img.attr('name')
@@ -63,7 +65,7 @@ function walkAnim(img){
         img.attr('src','assets/images/sprites/'+name+'_fr1.gif')
     }
 }
-
+//creating the character selector bars. If a player move onto the next level they cant select a new hero and so the hero part of it is closed off with a conditional that checks game level.
 function characterSelectorBar(){
         var charList=['scr1','pdn1','mst1','mnv1','bmg3','avt4','knt3','nja4','npc9','smr1','wmg1','zph1','npc4'];
         var evilList=['chr1','dvl1','skl1','spd1','syb1','thf1','thf2','thf3','trk1','wnv1','wnv2','npc5','npc6','npc7']

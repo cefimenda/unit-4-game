@@ -2,7 +2,6 @@ $(function(){
 
     $('.upgradeButton').hover(function(){
         var descript = $(this).attr('descript');
-        console.log(descript);
         $('.upgradeDescription').text(descript);
     });
     $('.upgradeButton').on('click',function(){
@@ -20,7 +19,9 @@ $(function(){
         if(decision == 'increaseAttack'){
             player.attacks.melee.damage+=10
         }
-
+        if (decision == 'increaseDefense'){
+            player.defense+=1
+        }
         player.stamina=player.maxStamina
         player.hp=player.maxHp
         player.update();
