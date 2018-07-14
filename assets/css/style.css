@@ -46,5 +46,15 @@ body{
 .btn-col{
     position:fixed;
     top:70%;
+}
+.levelsHolder{
+    position:fixed;
+    top:10%;
 
+}
+#levels{
+    text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
+    text-align: center;
+    font-weight: bold;
+    font-family: 'Cinzel',serif;
 }

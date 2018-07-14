@@ -35,17 +35,43 @@ $(function(){
     $("#start").click(function(){
         game.start()
         $(this).addClass('d-none')
+        $("#levels").text("Level: "+game.level)
+        $("#levels").removeClass('d-none')
+        $(".villains").remove()
     });
+    $("#restart").click(function(){
+        console.log('restarted')
+        game.level=1
+        for(var i in comp){
+            $("#"+comp[i].id).remove();
+            comp[i]=null;
+        }
+        comp=[]
+        $(".selectPlayer").removeClass('d-none')
+        characterSelectorBar()
+        player=null
+        $("#lostModal").modal('toggle')
+    });
+
 });
 
 
 var game = {
     inProgress : false,
     won:function(){
+        console.log(game.level)
+        game.inProgress=false;
+        game.level+=1
+        $(".selectVillains").removeClass('d-none')
+        $("#start").text('Next Level')
+        characterSelectorBar()
+        $(".villains").removeClass('d-none')
     },
     lost:function(){
-
+        console.log('lost')
+        $("#lostModal").modal({backdrop: 'static', keyboard: false})
     },
+    level:1,
     targetXp:100,
     newTargetXp:function(){
         var newTarg = game.targetXp**(1+player.level/50);
@@ -62,10 +88,12 @@ var game = {
             locList.push(coordinates)
             comp[i].create(coordinates[0],coordinates[1])
         }
-        player.create(500,1200)
+        if (game.level===1){
+            player.create(500,1200)
+        }
         game.inProgress= true
-        $(".selectVillains").hide()
-        $('.selectPlayer').hide()
+        $(".selectVillains").addClass('d-none')
+        $('.selectPlayer').addClass('d-none')
     }   
 }
 
